@@ -56,9 +56,9 @@ def parse_html(html_file, spotify_yaml, playlist_name, playlist_description):
     playlist_table = tables[0]
     playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
     playlist_table = playlist_table.drop(playlist_table.index[0])
-    with open(html_file[:-5] + '_playlist.txt', 'wb') as fid:
-        for index, row in playlist_table.iterrows():
-            fid.write("{} - {}\n".format(row['Artist'], row['Title']).encode("UTF-8"))
+    # with open(html_file[:-5] + '_playlist.txt', 'wb') as fid:
+    #     for index, row in playlist_table.iterrows():
+    #         fid.write("{} - {}\n".format(row['Artist'], row['Title']).encode("UTF-8"))
             # print(row['Artist'], row['Title'])
 
     config = read_yaml(spotify_yaml)
