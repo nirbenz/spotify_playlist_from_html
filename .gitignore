@@ -1,4 +1,6 @@
 .idea
 spotify.yaml
 to_playlist_old.py
-
+*.html
+*.htm
+*.yaml

@@ -19,25 +19,25 @@ def parse_args():
 
 
 def get_song(sp, name, artist, album):
-    result = sp.search(f"{artist} {name}")
-    if not result['tracks']['items']:
-        name = re.sub("[\(\[].*?[\)\]]", "", name).strip()
+    try:
         result = sp.search(f"{artist} {name}")
-    if not result['tracks']['items']:
-        artist = artist.split('Vs.')[0].strip()
-        result = sp.search(f"{artist} {name}")
-    if not result['tracks']['items']:
-        artist = artist.split('And')[0].strip()
-        result = sp.search(f"{artist} {name}")
-    for i in result['tracks']['items']:
-        if any([i['artists'][0]['name'] == a for a in artist.split('&')]) and (i['name'] == name):
-            return i
-    else:
-        try:
+        if not result['tracks']['items']:
+            name = re.sub("[\(\[].*?[\)\]]", "", name).strip()
+            result = sp.search(f"{artist} {name}")
+        if not result['tracks']['items']:
+            artist = artist.split('Vs.')[0].strip()
+            result = sp.search(f"{artist} {name}")
+        if not result['tracks']['items']:
+            artist = artist.split('And')[0].strip()
+            result = sp.search(f"{artist} {name}")
+        for i in result['tracks']['items']:
+            if any([i['artists'][0]['name'] == a for a in artist.split('&')]) and (i['name'] == name):
+                return i
+        else:
             result['tracks']['items'].sort(key=lambda x: x['popularity'])
             return result['tracks']['items'][-1]
-        except:
-            return None
+    except:
+        return None
 
 def read_yaml(yaml_path):
     with open(yaml_path, 'r') as stream:

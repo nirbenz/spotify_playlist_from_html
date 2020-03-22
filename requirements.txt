@@ -1,3 +1,4 @@
 pandas
 spotipy
 PyYAML
+bs4
