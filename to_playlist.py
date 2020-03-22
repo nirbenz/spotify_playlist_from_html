@@ -80,6 +80,10 @@ def parse_html(html_file, spotify_yaml, playlist_name, playlist_description):
             continue
         tracks.append(song_uri_thinger)
 
+    # remove duplicates keep order
+    tracks_no_dup = []
+    [tracks_no_dup.append(t) for t in tracks if t not in tracks_no_dup]
+
 
     playlist_result = sp.user_playlist_create(user_id, playlist_name, description=playlist_description)
     playlist_id = playlist_result['id']
