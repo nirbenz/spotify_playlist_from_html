@@ -13,3 +13,6 @@ To get your token, go [here](https://developer.spotify.com/console/get-recommend
 To get your Spotify user id, go into Spotify, click your Name, and in the account page that's click `Share->Copy Profile Link`. 
 
 You'll get something like this: `https://open.spotify.com/user/<user_id>?<some_junk>` which has the `user_id` you need.
+
+To use the StreamingToPlaylist module, you need to download your spotify data. 
+Enter your account dashboard at https://www.spotify.com/. In the privacy settings, apply for the download of your personal data. This might take a few days. When you get the mail, download the zip archive and place the MyData dir path as the spotify_data_path parameter.

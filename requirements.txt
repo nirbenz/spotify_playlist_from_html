@@ -2,3 +2,4 @@ pandas
 spotipy
 PyYAML
 bs4
+tqdm==4.45.0
