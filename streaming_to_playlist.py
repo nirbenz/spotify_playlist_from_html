@@ -4,7 +4,6 @@ import os
 from datetime import datetime
 from os import listdir
 
-import spotipy
 from tqdm import tqdm
 
 import utils
@@ -50,32 +49,37 @@ class StreamingToPlaylist(object):
         self._user_id = config["user_id"]
         self._token = config["OAuth_Token"]
 
-        self._sp = spotipy.Spotify(auth=self._token)
-        try:
-            self._sp.search('M')
-        except spotipy.client.SpotifyException as e:
-            print(f"Credentials error!", e)
-            exit(-1)
+        self._sp = utils.get_spotipy_object(self._token)
 
     def run(self):
         streamings = self._get_streamings()
-        print(f'Recovered {len(streamings)} streamings.')
+        print(f'Recovered {len(streamings)} streamings from history')
 
         streamings = self._filter_streamings_by_time_range(streamings)
 
+        print(f"Number of tracks in history range: {len(streamings)}")
+
+        print(f"Getting tracks info from Spotify")
         track_infos = []
+        unknown_tracks_num = 0
         for streaming in tqdm(streamings):
             track_name = streaming['trackName']
             artist_name = streaming['artistName']
             if track_name == "Unknown Track" or artist_name == "Unknown Artist":
+                unknown_tracks_num += 1
                 continue
             track_info = utils.get_song(self._sp, track_name, artist_name, "")
             if track_info is not None:
                 track_infos.append(track_info)
 
+        print(f"Skipped {unknown_tracks_num} unknown tracks or artists in history range")
+
+        print(f"Removing duplicate tracks")
         track_infos_no_dup = utils.remove_duplicates_keep_order(track_infos)
 
         track_ids = utils.track_ids_from_infos(track_infos_no_dup)
+
+        print(f"Final tracks number: {len(track_ids)}")
 
         playlist_url = utils.create_playlist_from_track_ids(self._sp,
                                                             self._user_id,
@@ -84,7 +88,7 @@ class StreamingToPlaylist(object):
                                                             self.IS_PUBLIC_PLAYLIST,
                                                             track_ids)
 
-        print(f"Success: Playlist URL at {playlist_url}")
+        print(f"Done. Playlist created at URL: {playlist_url}")
 
     def _get_streamings(self):
         """

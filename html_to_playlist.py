@@ -1,7 +1,6 @@
 import argparse
 
 import pandas as pd
-import spotipy
 
 import utils
 
@@ -35,12 +34,7 @@ def parse_html(html_file, spotify_yaml, playlist_name, playlist_description):
     user_id = config["user_id"]
     token = config["OAuth_Token"]
 
-    sp = spotipy.Spotify(auth=token)
-    try:
-        sp.search('M')
-    except spotipy.client.SpotifyException as e:
-        print(f"Credentials error!", e)
-        exit(-1)
+    sp = utils.get_spotipy_object(token)
     sp.trace = False
     tracks = []
     for index, row in playlist_table.iterrows():

@@ -1,6 +1,17 @@
 import re
 
+import spotipy
 import yaml
+
+
+def get_spotipy_object(token):
+    sp = spotipy.Spotify(auth=token)
+    try:
+        sp.search('M')
+    except spotipy.client.SpotifyException as e:
+        print(f"Credentials error!", e)
+        exit(-1)
+    return sp
 
 
 def create_playlist_from_track_ids(sp, user_id, playlist_name, playlist_description, is_public, track_ids):
