@@ -3,13 +3,14 @@ import ast
 import os
 from datetime import datetime
 from os import listdir
-
 from tqdm import tqdm
 
+# local imports
 import utils
+from spotify_abs_cls import SpotifyHandler
 
+# constants
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
-
 
 def parse_args():
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
@@ -25,7 +26,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class StreamingToPlaylist(object):
+class StreamingToPlaylist(SpotifyHandler):
     """
     Create playlist from streaming history, with defined time ranges.
     The scope in config.py must contain the following: "playlist-modify-private playlist-modify-public"
@@ -39,17 +40,12 @@ class StreamingToPlaylist(object):
         see the parse_args function for documentation on the parameters.
         """
         self._spotify_data_path = spotify_data_path
-        self._spotify_yaml_path = spotify_yaml_path
         self._playlist_name = playlist_name
         self._playlist_description = playlist_description
         self._start_time = self._date_string_to_datetime(start_time)
         self._end_time = self._date_string_to_datetime(end_time)
-
-        config = utils.read_yaml(self._spotify_yaml_path)
-        self._user_id = config["user_id"]
-        self._token = config["OAuth_Token"]
-
-        self._sp = utils.get_spotipy_object(self._token)
+        #
+        super().__init__(spotify_yaml_path)
 
     def run(self):
         streamings = self._get_streamings()
