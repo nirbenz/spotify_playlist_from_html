@@ -26,18 +26,13 @@ class HtmlToPlaylist(SpotifyHandler):
     Create playlist from a given HTML page.
     """
 
-    IS_PUBLIC_PLAYLIST = True
-
     def __init__(self, spotify_yaml_path, html_file_path, playlist_name, playlist_description):
         """
         see the parse_args function for documentation on the parameters.
         """
         self._html_file_path = html_file_path
-        self._playlist_name = playlist_name
-        self._playlist_description = playlist_description
         #
-        super().__init__(spotify_yaml_path)
-        self._sp.trace = False
+        super().__init__(spotify_yaml_path, playlist_name, playlist_description)
 
     def run(self):
         playlist_table = self._parse_playlist_file()
@@ -53,11 +48,7 @@ class HtmlToPlaylist(SpotifyHandler):
         track_infos_no_dup = utils.remove_duplicates_keep_order(tracks)
         track_ids = utils.track_ids_from_infos(track_infos_no_dup)
 
-        playlist_url = self._create_playlist_from_track_ids(self._user_id,
-                                                            self._playlist_name,
-                                                            self._playlist_description,
-                                                            self.IS_PUBLIC_PLAYLIST,
-                                                            track_ids)
+        playlist_url = self._create_playlist_from_track_ids(track_ids)
 
         print(f"Success: Playlist URL at {playlist_url}")
 

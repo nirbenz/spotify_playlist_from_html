@@ -33,19 +33,16 @@ class StreamingToPlaylist(SpotifyHandler):
     """
 
     STREAMING_HISTORY_FILE_PREFIX = "StreamingHistory"
-    IS_PUBLIC_PLAYLIST = True
 
     def __init__(self, spotify_yaml_path, spotify_data_path, playlist_name, playlist_description, start_time, end_time):
         """
         see the parse_args function for documentation on the parameters.
         """
         self._spotify_data_path = spotify_data_path
-        self._playlist_name = playlist_name
-        self._playlist_description = playlist_description
         self._start_time = self._date_string_to_datetime(start_time)
         self._end_time = self._date_string_to_datetime(end_time)
         #
-        super().__init__(spotify_yaml_path)
+        super().__init__(spotify_yaml_path, playlist_name, playlist_description)
 
     def run(self):
         streamings = self._get_streamings()
@@ -77,11 +74,7 @@ class StreamingToPlaylist(SpotifyHandler):
 
         print(f"Final tracks number: {len(track_ids)}")
 
-        playlist_url = self._create_playlist_from_track_ids(self._user_id,
-                                                            self._playlist_name,
-                                                            self._playlist_description,
-                                                            self.IS_PUBLIC_PLAYLIST,
-                                                            track_ids)
+        playlist_url = self._create_playlist_from_track_ids(track_ids)
 
         print(f"Done. Playlist created at URL: {playlist_url}")
 
