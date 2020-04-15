@@ -44,7 +44,7 @@ class HtmlToPlaylist(SpotifyHandler):
 
         tracks = []
         for index, row in playlist_table.iterrows():
-            song_uri_thinger = utils.get_song(self._sp, name=row['Title'], artist=row['Artist'], album=row['Release'])
+            song_uri_thinger = self._get_song(name=row['Title'], artist=row['Artist'], album=row['Release'])
             if song_uri_thinger is None:
                 print(f"Skipping [{row['Artist']} - {row['Title']}]")
                 continue
@@ -53,8 +53,7 @@ class HtmlToPlaylist(SpotifyHandler):
         track_infos_no_dup = utils.remove_duplicates_keep_order(tracks)
         track_ids = utils.track_ids_from_infos(track_infos_no_dup)
 
-        playlist_url = utils.create_playlist_from_track_ids(self._sp,
-                                                            self._user_id,
+        playlist_url = self._create_playlist_from_track_ids(self._user_id,
                                                             self._playlist_name,
                                                             self._playlist_description,
                                                             self.IS_PUBLIC_PLAYLIST,

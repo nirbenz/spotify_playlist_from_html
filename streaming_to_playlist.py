@@ -64,7 +64,7 @@ class StreamingToPlaylist(SpotifyHandler):
             if track_name == "Unknown Track" or artist_name == "Unknown Artist":
                 unknown_tracks_num += 1
                 continue
-            track_info = utils.get_song(self._sp, track_name, artist_name, "")
+            track_info = self._get_song(track_name, artist_name, "")
             if track_info is not None:
                 track_infos.append(track_info)
 
@@ -77,8 +77,7 @@ class StreamingToPlaylist(SpotifyHandler):
 
         print(f"Final tracks number: {len(track_ids)}")
 
-        playlist_url = utils.create_playlist_from_track_ids(self._sp,
-                                                            self._user_id,
+        playlist_url = self._create_playlist_from_track_ids(self._user_id,
                                                             self._playlist_name,
                                                             self._playlist_description,
                                                             self.IS_PUBLIC_PLAYLIST,
