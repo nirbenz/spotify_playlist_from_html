@@ -25,7 +25,8 @@ def create_playlist_from_track_ids(sp, user_id, playlist_name, playlist_descript
     return playlist_url
 
 
-def get_song(sp, name, artist, album):
+def get_song(sp, name, artist, album=None):
+    # TODO use album as well if given
     try:
         result = sp.search(f"{artist} {name}")
         if not result['tracks']['items']:

@@ -1,4 +1,6 @@
 import argparse
+import os
+
 import pandas as pd
 
 # local
@@ -6,11 +8,11 @@ import utils
 from spotify_abs_cls import SpotifyHandler
 
 # constants
-IS_PUBLIC_PLAYLIST = True
+HTML_EXTENSIONS = ['html', 'htm']
 
 def parse_args():
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
-    parser.add_argument('--spotify-yaml-path', '-s', help='Spotify credentials file',
+    parser.add_argument('--spotify-yaml-path', '--spotify_yaml_path', '-s', help='Spotify credentials file',
                         default='./spotify.yaml', type=str)
     parser.add_argument('--html-file-path', '-f', type=str, help='HTML file path',
                         default='bidud_party.html', )
@@ -38,12 +40,7 @@ class HtmlToPlaylist(SpotifyHandler):
         self._sp.trace = False
 
     def run(self):
-        with open(self._html_file_path, 'rb') as fid:
-            html_text = fid.read()
-        tables = pd.read_html(html_text)
-        playlist_table = tables[0]
-        playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
-        playlist_table = playlist_table.drop(playlist_table.index[0])
+        playlist_table = self._parse_playlist_file()
 
         tracks = []
         for index, row in playlist_table.iterrows():
@@ -60,11 +57,34 @@ class HtmlToPlaylist(SpotifyHandler):
                                                             self._user_id,
                                                             self._playlist_name,
                                                             self._playlist_description,
-                                                            IS_PUBLIC_PLAYLIST,
+                                                            self.IS_PUBLIC_PLAYLIST,
                                                             track_ids)
 
         print(f"Success: Playlist URL at {playlist_url}")
 
+    def _parse_playlist_file(self):
+        if self._html_file_path.split('.')[-1] in HTML_EXTENSIONS:
+            return self._parse_html_playlist()
+        elif self._html_file_path.split('.')[-1] == 'csv':
+            return self._parse_csv_playlist()
+        else:
+            raise RuntimeError("Only CSV and HTML playlists supported!")
+
+    def _parse_html_playlist(self):
+        with open(self._html_file_path, 'rb') as fid:
+            html_text = fid.read()
+        tables = pd.read_html(html_text)
+        playlist_table = tables[0]
+        playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
+        playlist_table = playlist_table.drop(playlist_table.index[0])
+        return playlist_table
+
+    def _parse_csv_playlist(self):
+        playlist_table = pd.read_csv(self._html_file_path)
+        playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
+        playlist_table = playlist_table.drop(playlist_table.index[0])
+        playlist_table ['Release'] = None
+        return playlist_table
 
 def main():
     args = parse_args()
