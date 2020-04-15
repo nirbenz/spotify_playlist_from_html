@@ -1,7 +1,5 @@
 import re
-
 import spotipy
-
 import utils
 
 
@@ -24,17 +22,15 @@ class SpotifyHandler(object):
         self._token = config["OAuth_Token"]
         self._sp = self._get_spotify_object()
 
-
     def _create_playlist_from_track_ids(self, track_ids):
         playlist_result = self._sp.user_playlist_create(self._user_id,
-                                                  self._playlist_name,
-                                                  public=self.IS_PUBLIC_PLAYLIST,
-                                                  description=self._playlist_description)
+                                                        self._playlist_name,
+                                                        public=self.IS_PUBLIC_PLAYLIST,
+                                                        description=self._playlist_description)
         playlist_id = playlist_result['id']
         self._sp.user_playlist_add_tracks(self._user_id, playlist_id, track_ids)
         playlist_url = playlist_result['external_urls']['spotify']
         return playlist_url
-
 
     def _get_song(self, name, artist, album=None):
         # TODO use album as well if given
@@ -57,7 +53,6 @@ class SpotifyHandler(object):
                 return result['tracks']['items'][-1]
         except:
             return None
-
 
     def _get_spotify_object(self):
         sp = spotipy.Spotify(auth=self._token)

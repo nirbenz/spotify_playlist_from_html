@@ -1,6 +1,4 @@
 import argparse
-import os
-
 import pandas as pd
 
 # local
@@ -9,6 +7,7 @@ from spotify_abs_cls import SpotifyHandler
 
 # constants
 HTML_EXTENSIONS = ['html', 'htm']
+
 
 def parse_args():
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
@@ -73,8 +72,9 @@ class HtmlToPlaylist(SpotifyHandler):
         playlist_table = pd.read_csv(self._html_file_path)
         playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
         playlist_table = playlist_table.drop(playlist_table.index[0])
-        playlist_table ['Release'] = None
+        playlist_table['Release'] = None
         return playlist_table
+
 
 def main():
     args = parse_args()

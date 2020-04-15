@@ -12,6 +12,7 @@ from spotify_abs_cls import SpotifyHandler
 # constants
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
 
+
 def parse_args():
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
     parser.add_argument('--spotify_data_path', '-d', type=str, help='Path to the Spotify MyData dir', required=True)
