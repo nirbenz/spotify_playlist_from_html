@@ -29,7 +29,6 @@ def parse_args():
 class StreamingToPlaylist(SpotifyHandler):
     """
     Create playlist from streaming history, with defined time ranges.
-    The scope in config.py must contain the following: "playlist-modify-private playlist-modify-public"
     """
 
     STREAMING_HISTORY_FILE_PREFIX = "StreamingHistory"
