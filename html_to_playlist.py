@@ -3,7 +3,7 @@ import pandas as pd
 
 # local
 import utils
-from spotify_abs_cls import SpotifuHandler
+from spotify_abs_cls import SpotifyHandler
 
 # constants
 IS_PUBLIC_PLAYLIST = True
@@ -19,13 +19,11 @@ def parse_args():
     return parser.parse_args()
 
 
-class HtmlToPlaylist(SpotifuHandler):
+class HtmlToPlaylist(SpotifyHandler):
     """
-    Create playlist from streaming history, with defined time ranges.
-    The scope in config.py must contain the following: "playlist-modify-private playlist-modify-public"
+    Create playlist from a given HTML page.
     """
 
-    STREAMING_HISTORY_FILE_PREFIX = "StreamingHistory"
     IS_PUBLIC_PLAYLIST = True
 
     def __init__(self, spotify_yaml_path, html_file_path, playlist_name, playlist_description):
@@ -46,10 +44,6 @@ class HtmlToPlaylist(SpotifuHandler):
         playlist_table = tables[0]
         playlist_table = playlist_table.rename(columns=playlist_table.iloc[0])
         playlist_table = playlist_table.drop(playlist_table.index[0])
-        # with open(html_file[:-5] + '_playlist.txt', 'wb') as fid:
-        #     for index, row in playlist_table.iterrows():
-        #         fid.write("{} - {}\n".format(row['Artist'], row['Title']).encode("UTF-8"))
-        # print(row['Artist'], row['Title'])
 
         tracks = []
         for index, row in playlist_table.iterrows():

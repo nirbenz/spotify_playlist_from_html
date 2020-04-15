@@ -1,7 +1,7 @@
 import utils
 
 
-class SpotifuHandler(object):
+class SpotifyHandler(object):
     """
     Superclass for spotify fun
     """

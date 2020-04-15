@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 # local imports
 import utils
-from spotify_abs_cls import SpotifuHandler
+from spotify_abs_cls import SpotifyHandler
 
 # constants
 DATE_TIME_FORMAT = '%Y-%m-%d %H:%M'
@@ -26,7 +26,7 @@ def parse_args():
     return parser.parse_args()
 
 
-class StreamingToPlaylist(SpotifuHandler):
+class StreamingToPlaylist(SpotifyHandler):
     """
     Create playlist from streaming history, with defined time ranges.
     The scope in config.py must contain the following: "playlist-modify-private playlist-modify-public"
