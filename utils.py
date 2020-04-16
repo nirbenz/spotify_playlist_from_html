@@ -1,5 +1,6 @@
 import yaml
 
+
 def read_yaml(yaml_path):
     with open(yaml_path, 'r') as stream:
         try:
