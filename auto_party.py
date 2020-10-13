@@ -1,5 +1,8 @@
 import argparse
 
+import numpy as np
+import pandas as pd
+
 # local imports
 from spotify_abs_cls import SpotifyHandler
 
@@ -15,7 +18,11 @@ def parse_args():
 
 class AutoParty(SpotifyHandler):
     """
+    TODO
     """
+
+    AUDIO_FEATURES = ["danceability", "energy", "loudness", "liveness", "valence"]
+    TIMESTAMP = "timestamp"
 
     def __init__(self, spotify_yaml_path, playlist_name, playlist_description):
         """
@@ -34,9 +41,34 @@ class AutoParty(SpotifyHandler):
             "artist": "blink 182"
         }
 
+        start_timestamp = 0
+        end_timestamp = 5
+
+        start_df = self.get_track_features_df(start_track, 0)
+        end_df = self.get_track_features_df(end_track, 5)
+        print(pd.concat([start_df, end_df]))
+        for timestamp in range(start_timestamp + 1, end_timestamp):
+            s = pd.Series([timestamp] + [np.nan] * len(self.AUDIO_FEATURES),
+                          index=[self.TIMESTAMP] + self.AUDIO_FEATURES)
+            start_df = start_df.append(s, ignore_index=True)
+
+        total_df = pd.concat([start_df, end_df])
+        total_df = total_df.interpolate(method='linear', limit_direction='forward', axis=0)
+        print(total_df)
+
+        # self._print_start_end_genres_recommendations(start_track, end_track)
+
+    def get_track_features_df(self, track, timestamp):
+        features = self._get_track_features(track)[0]
+        features[self.TIMESTAMP] = timestamp
+        wanted_feature_names = [self.TIMESTAMP] + self.AUDIO_FEATURES
+        filtered_features = {key: [value] for key, value in features.items() if key in wanted_feature_names}
+        df = pd.DataFrame(filtered_features, columns=wanted_feature_names)
+        return df
+
+    def _print_start_end_genres_recommendations(self, start_track, end_track):
         start_genres = self._get_track_genres(start_track)
         end_genres = self._get_track_genres(end_track)
-
         for genres in [start_genres, end_genres]:
             print(f"genres: {genres}")
             track_infos = self._sp.recommendations(seed_genres=genres, limit=5)
@@ -46,6 +78,15 @@ class AutoParty(SpotifyHandler):
             track_full_names = [f"{artist} - {name}" for artist, name in zip(track_artist_names, track_names)]
 
             print(f"tracks: {track_full_names}")
+
+    def _get_track_features(self, track):
+        # example:
+        # 'danceability': 0.851, 'energy': 0.806, 'key': 4, 'loudness': -4.62, 'mode': 1,
+        #  'speechiness': 0.0787, 'acousticness': 0.118, 'instrumentalness': 1.64e-06,
+        #  'liveness': 0.121, 'valence': 0.787, 'tempo': 118.999
+        track_id = self._get_track_id(track)
+        features = self._sp.audio_features([track_id])
+        return features
 
     def _get_track_id(self, track):
         return self._get_track_info(track)["id"]
@@ -58,6 +99,7 @@ class AutoParty(SpotifyHandler):
         return " & ".join(self._get_track_info_artist_names(track_info))
 
     def _get_track_genres(self, track):
+        # can try and obtain genre from album as well
         genres = []
         track_info = self._get_track_info(track)
         artist_ids = [artist["id"] for artist in track_info["artists"]]
