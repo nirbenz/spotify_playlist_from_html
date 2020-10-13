@@ -42,11 +42,51 @@ class AutoParty(SpotifyHandler):
         }
 
         start_timestamp = 0
-        end_timestamp = 5
+        end_timestamp = 15
 
-        start_df = self.get_track_features_df(start_track, 0)
-        end_df = self.get_track_features_df(end_track, 5)
-        print(pd.concat([start_df, end_df]))
+        track_infos, interpolated_features = self._interpolate_tracks(start_track, start_timestamp,
+                                                                      end_track, end_timestamp)
+
+        tracks_features = [self._get_features_from_track_info(info) for info in track_infos]
+        track_full_names = self._get_full_track_names_from_infos(track_infos)
+
+        print("\nResults:\n")
+
+        for track_index, (name, features) in enumerate(zip(track_full_names, tracks_features)):
+            input_features = interpolated_features.iloc[track_index].to_dict()
+            del input_features[self.TIMESTAMP]
+            print(f"{name}\ninput_features: {input_features}\nresult_features: {features}\n")
+
+    def _interpolate_tracks(self, start_track, start_timestamp,
+                            end_track, end_timestamp):
+        interpolated_features = self._get_features_interpolated_df(start_track, start_timestamp,
+                                                                   end_track, end_timestamp)
+        start_genres = self._get_track_genres(start_track)
+        print(f"start genres: {start_genres}")
+        end_genres = self._get_track_genres(end_track)
+        print(f"end genres: {end_genres}")
+
+        all_genres = start_genres + end_genres
+        print(f"using genre union as seeds: {all_genres}")
+
+        track_infos = []
+        for index, row in interpolated_features.iterrows():
+            features_dict = row.to_dict()
+            target_features_dict = dict()
+            for key in features_dict.keys():
+                if key == self.TIMESTAMP:
+                    continue
+                target_features_dict["target_" + key] = features_dict[key]
+            track_infos.extend(
+                self._sp.recommendations(seed_genres=all_genres, limit=1, **target_features_dict)["tracks"])
+
+        return track_infos, interpolated_features
+
+    def _get_features_interpolated_df(self, start_track, start_timestamp,
+                                      end_track, end_timestamp):
+        start_df = self.get_track_features_df(start_track, start_timestamp)
+        end_df = self.get_track_features_df(end_track, end_timestamp)
+        print(f"initial features:\n{pd.concat([start_df, end_df])}")
         for timestamp in range(start_timestamp + 1, end_timestamp):
             s = pd.Series([timestamp] + [np.nan] * len(self.AUDIO_FEATURES),
                           index=[self.TIMESTAMP] + self.AUDIO_FEATURES)
@@ -54,9 +94,8 @@ class AutoParty(SpotifyHandler):
 
         total_df = pd.concat([start_df, end_df])
         total_df = total_df.interpolate(method='linear', limit_direction='forward', axis=0)
-        print(total_df)
-
-        # self._print_start_end_genres_recommendations(start_track, end_track)
+        print(f"interpolated features:\n{total_df}")
+        return total_df.iloc[1:-1]
 
     def get_track_features_df(self, track, timestamp):
         features = self._get_track_features(track)[0]
@@ -66,18 +105,10 @@ class AutoParty(SpotifyHandler):
         df = pd.DataFrame(filtered_features, columns=wanted_feature_names)
         return df
 
-    def _print_start_end_genres_recommendations(self, start_track, end_track):
-        start_genres = self._get_track_genres(start_track)
-        end_genres = self._get_track_genres(end_track)
-        for genres in [start_genres, end_genres]:
-            print(f"genres: {genres}")
-            track_infos = self._sp.recommendations(seed_genres=genres, limit=5)
-            track_names = [track["name"] for track in track_infos["tracks"]]
-            track_artist_names = [self._get_track_info_artists_string(track) for track in track_infos["tracks"]]
-
-            track_full_names = [f"{artist} - {name}" for artist, name in zip(track_artist_names, track_names)]
-
-            print(f"tracks: {track_full_names}")
+    def _get_full_track_names_from_infos(self, track_infos):
+        track_names = [track["name"] for track in track_infos]
+        track_artist_names = [self._get_track_info_artists_string(track) for track in track_infos]
+        return [f"{artist} - {name}" for artist, name in zip(track_artist_names, track_names)]
 
     def _get_track_features(self, track):
         # example:
@@ -86,6 +117,13 @@ class AutoParty(SpotifyHandler):
         #  'liveness': 0.121, 'valence': 0.787, 'tempo': 118.999
         track_id = self._get_track_id(track)
         features = self._sp.audio_features([track_id])
+        return features
+
+    def _get_features_from_track_info(self, track_info, filter_features=True):
+        track_id = track_info["id"]
+        features = self._sp.audio_features([track_id])[0]
+        if filter_features:
+            features = {key: value for key, value in features.items() if key in self.AUDIO_FEATURES}
         return features
 
     def _get_track_id(self, track):
